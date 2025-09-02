@@ -22,20 +22,39 @@ Note: `tracing_wasm` uses the global JavaScript `console` and `performance` obje
 
 ## Usage
 
-For the simplest out of the box set-up, you can simply set `tracing_wasm` as your default tracing Subscriber in wasm_bindgen(start)
+### With Macroquad
 
-We have this declared in our `./src/lib.rs`
+This crate now works with macroquad without requiring wasm-bindgen. To use it:
+
+1. Include the JavaScript plugin in your HTML:
+```html
+<script src="tracing_wasm_plugin.js"></script>
+```
+
+2. Set up tracing in your Rust code:
+```rust
+fn main() {
+    // Set tracing_wasm as the global default subscriber
+    tracing_wasm::set_as_global_default();
+    
+    // Your macroquad app code here
+    macroquad::prelude::Window::new("My App", async {
+        loop {
+            // Your game loop
+            macroquad::prelude::next_frame().await;
+        }
+    });
+}
+```
+
+### Legacy wasm-bindgen Usage
+
+For projects still using wasm-bindgen, you can use an older version of this crate (v0.2.0 and earlier):
 
 ```rust
 #[wasm_bindgen(start)]
 pub fn start() -> Result<(), JsValue> {
-    // print pretty errors in wasm https://github.com/rustwasm/console_error_panic_hook
-    // This is not needed for tracing_wasm to work, but it is a common tool for getting proper error line numbers for panics.
-    console_error_panic_hook::set_once();
-
-    // Add this line:
     tracing_wasm::set_as_global_default();
-
     Ok(())
 }
 ```

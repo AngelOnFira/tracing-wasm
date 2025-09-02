@@ -17,13 +17,12 @@ repository = "https://github.com/storyai/tracing-wasm"
 version = "0.2.1"
 
 [lib]
-crate-type = ["cdylib", "rlib"]
+crate-type = ["rlib"]
 
 [dependencies]
 rayon = {version = "1.5", optional = true}
 tracing = {version = "0.1", features = ["attributes"], default-features = false}
 tracing-subscriber = {version = "0.3", features = ["registry"], default-features = false}
-wasm-bindgen = {version = "0.2"}
 
 [features]
 mark-with-rayon-thread-index = ["rayon"]

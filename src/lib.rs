@@ -9,22 +9,46 @@ use tracing::{
 use tracing_subscriber::layer::*;
 use tracing_subscriber::registry::*;
 
-use wasm_bindgen::prelude::*;
-
-#[wasm_bindgen]
 extern "C" {
-    #[wasm_bindgen(js_namespace = performance)]
-    fn mark(a: &str);
-    #[wasm_bindgen(catch, js_namespace = performance)]
-    fn measure(name: String, startMark: String) -> Result<(), JsValue>;
-    #[wasm_bindgen(js_namespace = console, js_name = log)]
-    fn log1(message: String);
-    #[wasm_bindgen(js_namespace = console, js_name = log)]
-    fn log2(message1: &str, message2: &str);
-    #[wasm_bindgen(js_namespace = console, js_name = log)]
-    fn log3(message1: &str, message2: &str, message3: &str);
-    #[wasm_bindgen(js_namespace = console, js_name = log)]
-    fn log4(message1: String, message2: &str, message3: &str, message4: &str);
+    fn performance_mark(name: *const u8, name_len: u32);
+    fn performance_measure(name: *const u8, name_len: u32, start_mark: *const u8, start_mark_len: u32) -> i32;
+    fn console_log1(message: *const u8, message_len: u32);
+    fn console_log4(message1: *const u8, message1_len: u32, message2: *const u8, message2_len: u32, message3: *const u8, message3_len: u32, message4: *const u8, message4_len: u32);
+}
+
+fn call_js_string_fn(f: unsafe extern "C" fn(*const u8, u32), s: &str) {
+    unsafe {
+        f(s.as_ptr(), s.len() as u32);
+    }
+}
+
+fn call_js_string_fn_result(f: unsafe extern "C" fn(*const u8, u32, *const u8, u32) -> i32, name: &str, start_mark: &str) -> Result<(), ()> {
+    unsafe {
+        let result = f(name.as_ptr(), name.len() as u32, start_mark.as_ptr(), start_mark.len() as u32);
+        if result == 0 { Ok(()) } else { Err(()) }
+    }
+}
+
+fn call_js_string4_fn(f: unsafe extern "C" fn(*const u8, u32, *const u8, u32, *const u8, u32, *const u8, u32), s1: &str, s2: &str, s3: &str, s4: &str) {
+    unsafe {
+        f(s1.as_ptr(), s1.len() as u32, s2.as_ptr(), s2.len() as u32, s3.as_ptr(), s3.len() as u32, s4.as_ptr(), s4.len() as u32);
+    }
+}
+
+fn mark(name: &str) {
+    call_js_string_fn(performance_mark, name);
+}
+
+fn measure(name: String, start_mark: String) -> Result<(), ()> {
+    call_js_string_fn_result(performance_measure, &name, &start_mark)
+}
+
+fn log1(message: String) {
+    call_js_string_fn(console_log1, &message);
+}
+
+fn log4(message1: String, message2: &str, message3: &str, message4: &str) {
+    call_js_string4_fn(console_log4, &message1, message2, message3, message4);
 }
 
 #[cfg(test)]
